@@ -56,6 +56,8 @@ const registerUser = asyncHandler( async (req, res) => {
 
 
      //check for images, check for avatar
+
+    //  console.log(req.files)
      const localAvatarPath = req.files?.avatar?.[0]?.path;
      const localCoverimagePath = req.files?.coverimage?.[0]?.path;
 
@@ -65,7 +67,7 @@ const registerUser = asyncHandler( async (req, res) => {
   
     //upload them to cloudinary, avatar
    const avatar = await uploadOnCloudinary(localAvatarPath);
-   const coverImage = await uploadOnCloudinary(localCoverimagePath);
+   const coverimage = await uploadOnCloudinary(localCoverimagePath);
 
   
     //again check if avatar is properlu uploaded on cloudinaru or not
@@ -79,7 +81,7 @@ const registerUser = asyncHandler( async (req, res) => {
    const user =  await User.create({
     fullName,
     avatar : avatar.url,
-    coverImage : coverImage?.url || "",
+    coverimage : coverimage?.url || "",
     email,
     userName :  userName.toLowerCase(),
     password

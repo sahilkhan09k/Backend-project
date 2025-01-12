@@ -32,7 +32,7 @@ const userSchema = new Schema({
             required : true,
         },
 
-        coverImage : {
+        coverimage : {
             type : String, //cloudenary url
             default : null,
         },
