@@ -7,13 +7,13 @@ import { apiResponse } from "../utils/apiResponse.js";
 const generateAccessAndRefresToken = async (userId) => {
     try {
         const user = await User.findById(userId)
-        const accesToken = await user.generateAccesToken()
+        const accessToken = await user.generateAccesToken()
         const refreshToken = await user.generateRefreshToken()
 
-        user.refreshTokens = refreshToken
+        user.refreshToken = refreshToken
          await user.save({validateBeforeSave : false})
 
-         return {accesToken, refreshToken}
+         return {accessToken, refreshToken}
     } catch (error) {
         throw new apiError(500, "Spmething went wrong while generating refresh and acces tokens")
     }
@@ -105,7 +105,7 @@ const registerUser = asyncHandler( async (req, res) => {
 
    //remove password and refresh token feild from response
     const createdUser = await User.findById(user._id).select(
-        "-password -refreshTokens"
+        "-password -refreshToken"
     )
 
 
@@ -147,9 +147,9 @@ const loginUser = asyncHandler( async (req, res) => {
         throw new apiError(401, "wrong password entered")
     }
 
-    const{accesToken, refreshToken} = await generateAccessAndRefresToken(user._id)
+    const{accessToken, refreshToken} = await generateAccessAndRefresToken(user._id)
 
-    const loggedInUser = await User.findById(user._id).select("-password -refreshTokens")
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
     const options = {
         httpOnly : true,
@@ -158,13 +158,13 @@ const loginUser = asyncHandler( async (req, res) => {
 
     return res
     .status(200)
-    .cookie("accessToken", accesToken, options)
+    .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(
         new apiResponse(
             200,
             {
-                user : loggedInUser, accesToken, refreshToken
+                user : loggedInUser, accessToken, refreshToken
             },
             "User loggedIn succesfully"
         )
@@ -183,7 +183,7 @@ const logoutUser = asyncHandler(async (req, res) => {
         await User.findByIdAndUpdate(
             req.user._id,
             {
-                $set: { refreshTokens: undefined } // Clear all refresh tokens for simplicity
+                $set: { refreshToken: undefined } // Clear all refresh tokens for simplicity
             },
             { new: true }
         );
@@ -206,6 +206,10 @@ const logoutUser = asyncHandler(async (req, res) => {
         throw new apiError(500, "Failed to log out user.");
     }
 });
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incominRefreshToken = req.cookies.refreshToken
+})
 
 export {
     registerUser,

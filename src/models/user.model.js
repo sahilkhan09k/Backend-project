@@ -49,7 +49,7 @@ const userSchema = new Schema({
             required : [true, "Password is required"],
         },
 
-        refreshTokens : {
+        refreshToken : {
             type : String,
         }
 }, {timestamps : true})
