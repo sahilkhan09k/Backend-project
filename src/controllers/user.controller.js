@@ -8,6 +8,9 @@ import jwt from "jsonwebtoken";
 const generateAccessAndRefresToken = async (userId) => {
     try {
         const user = await User.findById(userId)
+        if(!user) {
+            throw new apiError(404, "User not found")
+        }
         const accessToken = await user.generateAccesToken()
         const refreshToken = await user.generateRefreshToken()
 
@@ -236,7 +239,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
        .status(200)
        .cookie("accessToken", accessToken, options)
        .cookie("refreshToken", refreshToken, options
-        .json(
+       .json(
             new apiResponse(
                 200,
                 {accessToken, refreshToken : refreshToken},
@@ -281,7 +284,7 @@ const changeProfileDetails = asyncHandler(async(req, res) => {
         throw new apiError(401, "Provide username and fullname")
     }
 
-    const user = User.findByIdAndUpdate(req.user?._id,
+    const user = await User.findByIdAndUpdate(req.user?._id,
         {
             $set: {
                 fullName : fullName,
@@ -302,64 +305,84 @@ const changeProfileDetails = asyncHandler(async(req, res) => {
     )
 })
 
-const updateUserAvatar = asyncHandler(async(req, res) => {
-    const avatarLocalPath = req.file?.path
+const updateUserAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.file?.path;
 
-    if(!avatarLocalPath) {
-        throw new apiError(400, "Provide the avatar to change")
+    if (!avatarLocalPath) {
+        throw new apiError(400, "Provide the avatar to change");
     }
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    const user = await User.findById(req.user._id); // Fetch the user
 
-    if(!avatar.url) {
-        throw new apiError(400, "Error occured while uploading th avatar")
+    // If an old avatar exists, delete it from Cloudinary
+    if (user?.avatar) {
+        const oldAvatarPublicId = user.avatar.split('/').pop().split('.')[0]; // Extract the public_id
+        await uploadOnCloudinary.v2.uploader.destroy(oldAvatarPublicId);
     }
 
-    const user =  await User.findByIdAndUpdate(
+    // Upload the new avatar
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+    if (!avatar.url) {
+        throw new apiError(400, "Error occurred while uploading the avatar");
+    }
+
+    // Update the user record with the new avatar
+    const updatedUser = await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set : {
-                avatar : avatar.url
-            }
+            $set: {
+                avatar: avatar.url,
+            },
         },
-        {new : true}
-    ).select("-password")
+        { new: true }
+    ).select("-password");
 
-    return res
-    .status(200)
-    .json(
-        new apiResponse(200, user, "Avatar updated succenfully")
-    )
-})
+    return res.status(200).json(
+        new apiResponse(200, updatedUser, "Avatar updated successfully")
+    );
+});
 
 
-const updateCoverImage = asyncHandler(async(req, res) => {
-    const localCoverImagePath = req.file?.path
-    if(!localCoverImagePath) {
-        throw new apiError(400, "Provide the cover to be updated")
+
+const updateCoverImage = asyncHandler(async (req, res) => {
+    const localCoverImagePath = req.file?.path;
+
+    if (!localCoverImagePath) {
+        throw new apiError(400, "Provide the cover to be updated");
     }
 
-    const coverImage = await uploadOnCloudinary(localCoverImagePath)
-    if(!coverImage.url) {
-        throw new apiError(400, "Something went wrong while uploading the file")
+    const user = await User.findById(req.user._id); // Fetch the user
+
+    // If an old cover image exists, delete it from Cloudinary
+    if (user?.coverImage) {
+        const oldCoverPublicId = user.coverImage.split('/').pop().split('.')[0]; // Extract the public_id
+        await uploadOnCloudinary.v2.uploader.destroy(oldCoverPublicId);
     }
 
-    const user =  await User.findByIdAndUpdate(
+    // Upload the new cover image
+    const coverImage = await uploadOnCloudinary(localCoverImagePath);
+
+    if (!coverImage.url) {
+        throw new apiError(400, "Something went wrong while uploading the file");
+    }
+
+    // Update the user record with the new cover image
+    const updatedUser = await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set : {
-                coverImage : coverImage.url
-            }
+            $set: {
+                coverImage: coverImage.url,
+            },
         },
-        {new : true}
-    )
+        { new: true }
+    );
 
-    return res
-    .status(200)
-    .json(
-        new apiResponse(200, user, "cover image updated succesfully")
-    )
-})
+    return res.status(200).json(
+        new apiResponse(200, updatedUser, "Cover image updated successfully")
+    );
+});
+
 
 export {
     refreshAccessToken,

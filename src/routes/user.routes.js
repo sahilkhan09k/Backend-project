@@ -29,12 +29,12 @@ router.route("/Refresh-token").post(refreshAccessToken)
 router.route("/change-password").post(verifyJwt, changeCurrentPassword)
 router.route("/current-user").post(verifyJwt, getCurrentUser)
 router.route("/Change-details").post(verifyJwt, changeProfileDetails)
-router.route("/update-avatar").post(upload.fields({
+router.route("/update-avatar").post(upload.fields([{
    name : "avatar",
    maxCount : 1
-}), verifyJwt, updateUserAvatar)
-router.route("/update-coverImage").post(upload.fields({
+}]), verifyJwt, updateUserAvatar)
+router.route("/update-coverImage").post(upload.fields([{
    name : "coverimage",
    maxCount : 1
-}), verifyJwt, updateCoverImage)
+}]), verifyJwt, updateCoverImage)
 export default router;
