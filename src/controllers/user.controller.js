@@ -312,19 +312,22 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         throw new apiError(400, "Provide the avatar to change");
     }
 
-    const user = await User.findById(req.user._id); // Fetch the user
-
-    // If an old avatar exists, delete it from Cloudinary
-    if (user?.avatar) {
-        const oldAvatarPublicId = user.avatar.split('/').pop().split('.')[0]; // Extract the public_id
-        await uploadOnCloudinary.v2.uploader.destroy(oldAvatarPublicId);
-    }
-
-    // Upload the new avatar
+    // Upload the new avatar to Cloudinary
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
     if (!avatar.url) {
         throw new apiError(400, "Error occurred while uploading the avatar");
+    }
+
+    // Fetch the user and delete the old avatar *after* successful upload
+    const user = await User.findById(req.user._id);
+    if (user?.avatar) {
+        const oldAvatarPublicId = user.avatar.split('/').pop().split('.')[0]; // Extract the public_id
+        try {
+            await uploadOnCloudinary.v2.uploader.destroy(oldAvatarPublicId);
+        } catch (error) {
+            console.error("Failed to delete old avatar:", error.message);
+        }
     }
 
     // Update the user record with the new avatar
@@ -352,19 +355,22 @@ const updateCoverImage = asyncHandler(async (req, res) => {
         throw new apiError(400, "Provide the cover to be updated");
     }
 
-    const user = await User.findById(req.user._id); // Fetch the user
-
-    // If an old cover image exists, delete it from Cloudinary
-    if (user?.coverImage) {
-        const oldCoverPublicId = user.coverImage.split('/').pop().split('.')[0]; // Extract the public_id
-        await uploadOnCloudinary.v2.uploader.destroy(oldCoverPublicId);
-    }
-
-    // Upload the new cover image
+    // Upload the new cover image to Cloudinary
     const coverImage = await uploadOnCloudinary(localCoverImagePath);
 
     if (!coverImage.url) {
         throw new apiError(400, "Something went wrong while uploading the file");
+    }
+
+    // Fetch the user and delete the old cover image *after* successful upload
+    const user = await User.findById(req.user._id);
+    if (user?.coverimage) {
+        const oldCoverPublicId = user.coverimage.split('/').pop().split('.')[0]; // Extract the public_id
+        try {
+            await uploadOnCloudinary.v2.uploader.destroy(oldCoverPublicId);
+        } catch (error) {
+            console.error("Failed to delete old cover image:", error.message);
+        }
     }
 
     // Update the user record with the new cover image
@@ -372,7 +378,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
         req.user._id,
         {
             $set: {
-                coverImage: coverImage.url,
+                coverimage: coverImage.url,
             },
         },
         { new: true }
@@ -382,6 +388,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
         new apiResponse(200, updatedUser, "Cover image updated successfully")
     );
 });
+
 
 
 export {
