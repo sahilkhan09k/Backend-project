@@ -1,8 +1,8 @@
 import mongoose, {Schema} from "mongoose";
-import { User } from "./user.model";
+import { User } from "../models/user.model.js";
 
 const subscriptionSchema = new Schema({
-    subscribe : {
+    subscriber : {
         type : Schema.Types.ObjectId, //One who is subscribing
         ref : "User"
     },

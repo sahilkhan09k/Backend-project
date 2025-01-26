@@ -4,6 +4,7 @@ import {User} from "../models/user.model.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
+import { Subscription } from "../models/subscription.model.js";
 
 const generateAccessAndRefresToken = async (userId) => {
     try {
@@ -389,6 +390,77 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     );
 });
 
+const getUserChannelProfile = asyncHandler(async(req, res) => {  //i.e displaying profile of a channel
+        const {userName} = req.params
+        if(!userName || !userName?.trim()) {
+            throw new apiError(400, "User not found")
+        }
+
+        const normalizedUserName = userName.trim().toLowerCase(); 
+
+       const channel =  await User.aggregate([
+            {
+              $match : {
+                userName : normalizedUserName,
+              }
+            },
+            {
+                $lookup : {
+                    from : "subscriptions",
+                    localField : "_id",
+                    foreignField : "channel",
+                    as : "subscribers"
+                }
+            },
+            {
+                $lookup : {
+                    from : "subscriptions",
+                    localField : "_id",
+                    foreignField : "subscriber",
+                    as : "subscribeTo"
+                }
+            },
+            {
+                $addFields : {
+                    subscribersCount : {
+                        $size : "$subscribers"
+                    },
+                    channelSubscribeToCount : {
+                        $size : "$subscribeTo"
+                    },
+                    isSubscribed : {
+                        $cond : {
+                            if: {$in : [req.user?._id, "$subscribers.subscriber"]},
+                            then: true,
+                            else:false
+                        }
+                    }
+                }
+            },
+            {
+                $project : {
+                    fullName : 1,
+                    userName : 1,
+                    avatar : 1,
+                    coverimage : 1,
+                    createdAt : 1,
+                    subscribersCount : 1,
+                    channelSubscribeToCount : 1,
+                    isSubscribed : 1
+                }
+            }
+        ])
+
+        if(!channel?.length) {
+            throw new apiError(400, "Channel do not exist")
+        }
+
+
+        return res
+        .status(200)
+        .json(new apiResponse(200,channel[0], "User fetched successfully"))    
+})
+
 
 
 export {
@@ -400,5 +472,6 @@ export {
     getCurrentUser,
     changeProfileDetails,
     updateUserAvatar,
-    updateCoverImage
+    updateCoverImage,
+    getUserChannelProfile
 }
