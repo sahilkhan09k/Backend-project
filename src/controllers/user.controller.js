@@ -475,15 +475,15 @@ const getWatchHistory = asyncHandler(async(req,res) => {
                 from : "videos",
                 localField : "watchHistory",
                 foreignField : "_id",
-                as : "watchHistory"
+                as : "watchHistory",
 
                 pipeline : [
                     {
                         $lookup: {
                             from : "users",
-                            localField : "Owner"
+                            localField : "Owner",
                             foreignField : "_id",
-                            as : "owner"
+                            as : "owner",
 
                             pipeline : [
                                 {
