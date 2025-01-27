@@ -5,6 +5,7 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import { Subscription } from "../models/subscription.model.js";
+import mongoose from "mongoose";
 
 const generateAccessAndRefresToken = async (userId) => {
     try {
@@ -462,6 +463,62 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {  //i.e displayin
 })
 
 
+const getWatchHistory = asyncHandler(async(req,res) => {
+    const user = await User.aggregate([
+        {
+            $match : {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup: {
+                from : "videos",
+                localField : "watchHistory",
+                foreignField : "_id",
+                as : "watchHistory"
+
+                pipeline : [
+                    {
+                        $lookup: {
+                            from : "users",
+                            localField : "Owner"
+                            foreignField : "_id",
+                            as : "owner"
+
+                            pipeline : [
+                                {
+                                    $project : {
+                                        fullName : 1,
+                                        userName : 1,
+                                        avatar : 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields : {
+                            Owner : {
+                                $first : "$Owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            user[0].watchHistory,
+            "User history fetched successfully"
+        )
+    )
+})
+
 
 export {
     refreshAccessToken,
@@ -473,5 +530,6 @@ export {
     changeProfileDetails,
     updateUserAvatar,
     updateCoverImage,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getWatchHistory
 }
