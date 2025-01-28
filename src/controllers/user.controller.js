@@ -464,59 +464,68 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {  //i.e displayin
 
 
 const getWatchHistory = asyncHandler(async(req,res) => {
-    const user = await User.aggregate([
-        {
-            $match : {
-                _id: new mongoose.Types.ObjectId(req.user._id)
-            }
-        },
-        {
-            $lookup: {
-                from : "videos",
-                localField : "watchHistory",
-                foreignField : "_id",
-                as : "watchHistory",
 
-                pipeline : [
-                    {
-                        $lookup: {
-                            from : "users",
-                            localField : "Owner",
-                            foreignField : "_id",
-                            as : "owner",
-
-                            pipeline : [
-                                {
-                                    $project : {
-                                        fullName : 1,
-                                        userName : 1,
-                                        avatar : 1
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        $addFields : {
-                            Owner : {
-                                $first : "$Owner"
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    ])
-
-    return res
-    .status(200)
-    .json(
-        new apiResponse(
-            200,
-            user[0].watchHistory,
-            "User history fetched successfully"
-        )
-    )
+   try {
+     if (!req.user || !req.user._id) {
+         return new apiError(400, "User id is required")
+       }
+       
+     const user = await User.aggregate([
+         {
+             $match : {
+                 _id : new mongoose.Types.ObjectId(String(req.user._id))
+             }
+         },
+         {
+             $lookup: {
+                 from : "videos",
+                 localField : "watchHistory",
+                 foreignField : "_id",
+                 as : "watchHistory",
+ 
+                 pipeline : [
+                     {
+                         $lookup: {
+                             from : "users",
+                             localField : "Owner",
+                             foreignField : "_id",
+                             as : "Owner",
+ 
+                             pipeline : [
+                                 {
+                                     $project : {
+                                         fullName : 1,
+                                         userName : 1,
+                                         avatar : 1
+                                     }
+                                 }
+                             ]
+                         }
+                     },
+                     {
+                         $addFields : {
+                             Owner : {
+                                 $first : "$Owner"
+                             }
+                         }
+                     }
+                 ]
+             }
+         }
+     ])
+ 
+     return res
+     .status(200)
+     .json(
+         new apiResponse(
+             200,
+             user[0].watchHistory,
+             "User history fetched successfully"
+         )
+     )
+   } catch (error) {
+    return new apiError(400, "History fetching failed", error) 
+   }
 })
 
 
