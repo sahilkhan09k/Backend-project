@@ -10,10 +10,8 @@ const deleteFromCloudinary = async (publicId) => {
     const response = await cloudinary.uploader.destroy(publicId);
     
     if (response.result === "ok") {
-      console.log("File deleted successfully from Cloudinary.");
       return true;
     } else {
-      console.error("Failed to delete file from Cloudinary.");
       return false;
     }
   } catch (error) {
