@@ -6,6 +6,8 @@ import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import { Subscription } from "../models/subscription.model.js";
 import mongoose from "mongoose";
+import extractPublicId from "../utils/extractPublicId.js";
+import { deleteFromCloudinary } from "../utils/deleteFromCloudinary .js";
 
 const generateAccessAndRefresToken = async (userId) => {
     try {
@@ -40,7 +42,6 @@ const registerUser = asyncHandler( async (req, res) => {
 
      //get user details from frontend
     const {userName, fullName, email, password} = req.body;
-    console.log("email : ", email);
 
 
      //validation - not empty(we can add more)
@@ -324,12 +325,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     // Fetch the user and delete the old avatar *after* successful upload
     const user = await User.findById(req.user._id);
     if (user?.avatar) {
-        const oldAvatarPublicId = user.avatar.split('/').pop().split('.')[0]; // Extract the public_id
-        try {
-            await uploadOnCloudinary.v2.uploader.destroy(oldAvatarPublicId);
-        } catch (error) {
-            console.error("Failed to delete old avatar:", error.message);
-        }
+        const avatarCloudinaryId = extractPublicId(user.avatar);
+        await deleteFromCloudinary(avatarCloudinaryId);
     }
 
     // Update the user record with the new avatar
@@ -367,12 +364,8 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     // Fetch the user and delete the old cover image *after* successful upload
     const user = await User.findById(req.user._id);
     if (user?.coverimage) {
-        const oldCoverPublicId = user.coverimage.split('/').pop().split('.')[0]; // Extract the public_id
-        try {
-            await uploadOnCloudinary.v2.uploader.destroy(oldCoverPublicId);
-        } catch (error) {
-            console.error("Failed to delete old cover image:", error.message);
-        }
+       const coverImageCloudinaryId = extractPublicId(user.coverimage);
+       await deleteFromCloudinary(coverImageCloudinaryId);
     }
 
     // Update the user record with the new cover image

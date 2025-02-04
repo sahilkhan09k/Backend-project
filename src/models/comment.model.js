@@ -22,4 +22,4 @@ const commentSchema = new Schema({
 
 commentSchema.plugin(mongooseAggregatePaginate)
 
-export default Comment = mongoose.model("Comment", commentSchema)
+export const Commentt = mongoose.model("Commentt", commentSchema)
