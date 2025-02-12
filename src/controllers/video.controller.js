@@ -36,7 +36,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
         const totalVideos = await Video.countDocuments(filter);
 
-        res.status(200).json({
+       return res.status(200).json({
             success: true,
             totalVideos,
             currentPage: parseInt(page),
@@ -45,7 +45,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+       return res.status(500).json({ success: false, message: 'Server Error', error: error.message });
     }
 });
 
