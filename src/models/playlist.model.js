@@ -15,10 +15,10 @@ const playListSchema = new Schema({
             ref : "Video"
         }],
 
-        creater : {
+        creator : {
             type : Schema.Types.ObjectId,
             ref : "User"
         },
 },{timestamps : true})
 
-export default PlayList = mongoose.model("PlayList", playListSchema)
+export const PlayList = mongoose.model("PlayList", playListSchema)
