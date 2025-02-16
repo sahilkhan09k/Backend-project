@@ -1,8 +1,8 @@
-import { Commentt } from "../models/comment.model";
-import { Video } from "../models/video.model";
-import { apiError } from "../utils/apiError";
-import { apiResponse } from "../utils/apiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { Commentt } from "../models/comment.model.js";
+import { Video } from "../models/video.model.js";
+import { apiError } from "../utils/apiError.js";
+import { apiResponse } from "../utils/apiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 
 const getVideoComments = asyncHandler(async (req, res) => {

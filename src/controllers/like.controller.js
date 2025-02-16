@@ -1,11 +1,11 @@
 import { json } from "express";
-import { Commentt } from "../models/comment.model";
-import { Like } from "../models/like.model";
-import tweetModel from "../models/tweet.model";
-import { Video } from "../models/video.model";
-import { apiError } from "../utils/apiError";
-import { apiResponse } from "../utils/apiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { Commentt } from "../models/comment.model.js";
+import { Like } from "../models/like.model.js";
+import {Tweet} from "../models/tweet.model.js";
+import { Video } from "../models/video.model.js";
+import { apiError } from "../utils/apiError.js";
+import { apiResponse } from "../utils/apiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 
 
@@ -86,7 +86,7 @@ const toggleTweetLike = asyncHandler(async(req, res) => {
         throw new apiError(400, "Please log in")
     }
 
-    const tweet = await tweetModel.findById(tweetId);
+    const tweet = await Tweet.findById(tweetId);
     if(!tweet) {
         throw new apiError(404, "Tweet does not exists");
     }

@@ -1,14 +1,9 @@
-import {asyncHandler} from '../middlewares/asyncHandler.js';
-import {apiError} from '../utils/apiError.js';
-import { Subscription } from "../models/subscription.model";
-import { Video } from '../models/video.model.js';
-
-import { asyncHandler } from '../middlewares/asyncHandler.js';
-import { apiError } from '../utils/apiError.js';
-import { Subscription } from "../models/subscription.model";
-import { Video } from '../models/video.model.js';
-import { Tweet } from '../models/tweet.model.js';
-import { Like } from '../models/like.model.js';
+import { asyncHandler } from "../utils/asyncHandler.js"
+import { apiError } from '../utils/apiError.js'
+import { Subscription } from "../models/subscription.model.js"
+import { Video } from '../models/video.model.js'
+import { Tweet } from '../models/tweet.model.js'
+import { Like } from '../models/like.model.js'
 import mongoose from 'mongoose';
 import { apiResponse } from '../utils/apiResponse.js';
 
