@@ -30,6 +30,7 @@ import playListRouter from './routes/playlist.routes.js'
 import subscriptionRouter from './routes/subscription.routes.js'
 import tweetRouter from './routes/tweet.routes.js'
 import healthCheckRouter from './routes/healthCheck.routes.js'
+import dashboardRouter from './routes/dashboard.routes.js'
 
 
 //routes declaration
@@ -49,6 +50,8 @@ app.use("api/v1/subsCription", subscriptionRouter);
 app.use("/api/v1/tweets",tweetRouter);
 
 app.use("/api/v1/healthCheck", healthCheckRouter);
+
+app.use("/api/v1/dashboard", dashboardRouter);
 
 
 
